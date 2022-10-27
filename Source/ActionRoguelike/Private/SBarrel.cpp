@@ -13,7 +13,7 @@ ASBarrel::ASBarrel()
 
 	StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>("StaticMesh");
 	StaticMeshComp->SetCollisionObjectType(ECC_PhysicsBody);
-	StaticMeshComp->SetSimulatePhysics(true); 
+	StaticMeshComp->SetSimulatePhysics(true);
 	StaticMeshComp->OnComponentHit.AddDynamic(this, &ASBarrel::OnHit);
 	RootComponent = StaticMeshComp;
 
