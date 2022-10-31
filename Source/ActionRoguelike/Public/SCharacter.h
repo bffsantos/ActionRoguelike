@@ -46,6 +46,8 @@ protected:
 
 	void MoveForward(float Value);
 
+	void Shoot();
+
 	void MoveRight(float Value);
 
 	void PrimaryAttack();
