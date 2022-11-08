@@ -10,6 +10,7 @@ class UCameraComponent;
 class USpringArmComponent;
 class USInteractionComponent;
 class UAnimMontage;
+class USAttributeComponent;
 
 UCLASS()
 class ACTIONROGUELIKE_API ASCharacter : public ACharacter
@@ -18,13 +19,23 @@ class ACTIONROGUELIKE_API ASCharacter : public ACharacter
 
 protected:
 
-	UPROPERTY(EditAnywhere, Category = "Attack")
 	TSubclassOf<AActor> ProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	TSubclassOf<AActor> MagicProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	TSubclassOf<AActor> BlackholeProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	TSubclassOf<AActor> DashProjectileClass;
 
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	UAnimMontage* AttackAnim;
 
 	FTimerHandle TimerHandler_PrimaryAttack;
+	FTimerHandle TimerHandler_SecondaryAttack;
+	FTimerHandle TimerHandler_Dash;
 
 public:
 	// Sets default values for this character's properties
@@ -41,20 +52,28 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	USInteractionComponent* InteractionComp;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USAttributeComponent* AttributeComp;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	void MoveForward(float Value);
 
-	void Shoot();
-
 	void MoveRight(float Value);
+
+	FTransform CalculateAim(float TraceRange);
 
 	void PrimaryAttack();
 
-	void PrimaryAttack_TimeElapsed();
-
+	void Attack_TimeElapsed();
+	
+	void SecondaryAttack();
+	
 	void PrimaryInteract();
+
+	void Teleport();
+
 
 public:	
 	// Called every frame
