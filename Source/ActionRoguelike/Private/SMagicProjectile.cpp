@@ -22,7 +22,8 @@ ASMagicProjectile::ASMagicProjectile()
 void ASMagicProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	CastProjectile();
 }
 
 // Called every frame
@@ -42,8 +43,9 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 		{
 			AttributeComp->ApplyHealthChange(-20.0f);
 
-			Destroy();
+			Explode();
 		}
 	}
+	
 }
 

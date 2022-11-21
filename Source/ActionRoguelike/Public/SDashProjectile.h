@@ -7,7 +7,6 @@
 #include "GameFramework/Actor.h"
 #include "SDashProjectile.generated.h"
 
-class UParticleSystem;
 
 UCLASS()
 class ACTIONROGUELIKE_API ASDashProjectile : public ASBaseProjectile
@@ -20,26 +19,19 @@ public:
 
 protected:
 
-	UPROPERTY(EditAnywhere, Category = "VFX")
-	UParticleSystem* Explosion;
+	UPROPERTY(EditDefaultsOnly, Category = "Teleport")
+	float TeleportDelay;
 
-	FTimerHandle TimerHandler_Teleport;
+	UPROPERTY(EditDefaultsOnly, Category = "Teleport")
+	float DetonateDelay;
+
+	FTimerHandle TimerHandler_DelayedDetonate;
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	virtual void PostInitializeComponents() override;
-
-	void ExplodeProjectile_TimeElapsed();
 	
-	void Teleport();
-
-	void Teleport_TimeElapsed();
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION()
-	void OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	void Explode_Implementation() override;
+	
+	void TeleportInstigator();
+	
 };

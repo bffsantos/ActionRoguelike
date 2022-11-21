@@ -5,60 +5,49 @@
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Particles/ParticleSystemComponent.h"
 
 // Sets default values
 ASDashProjectile::ASDashProjectile()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	TeleportDelay = 0.2f;
+	DetonateDelay = 0.2f;
 
+	ProjectileMovementComp->InitialSpeed = 6000.f;
 }
-
 
 // Called when the game starts or when spawned
 void ASDashProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	GetWorldTimerManager().SetTimer(TimerHandler_Teleport, this, &ASDashProjectile::ExplodeProjectile_TimeElapsed, 1.0f);
+
+	GetWorldTimerManager().SetTimer(TimerHandler_DelayedDetonate, this, &ASDashProjectile::Explode, DetonateDelay);
 }
 
-void ASDashProjectile::PostInitializeComponents()
+void ASDashProjectile::Explode_Implementation()
 {
-	Super::PostInitializeComponents();
+	// Clear timer if the Explode was already called through another source like OnActorHit
+	GetWorldTimerManager().ClearTimer(TimerHandler_DelayedDetonate);
 
-	//SphereComp->OnComponentHit.AddDynamic(this, &ASBarrel::OnActorHit);
-}
+	UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
 
-// Called every frame
-void ASDashProjectile::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+	EffectComp->DeactivateSystem();
 
-}
-
-void ASDashProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{
-
-}
-
-void ASDashProjectile::ExplodeProjectile_TimeElapsed()
-{
 	ProjectileMovementComp->StopMovementImmediately();
+	SetActorEnableCollision(false);
 
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Explosion, this->GetTransform());
-
-	Teleport();
+	FTimerHandle TimerHandle_DelayedTeleport;
+	GetWorldTimerManager().SetTimer(TimerHandle_DelayedTeleport, this, &ASDashProjectile::TeleportInstigator, TeleportDelay);
 }
 
-void ASDashProjectile::Teleport()
+void ASDashProjectile::TeleportInstigator()
 {
-	GetWorldTimerManager().SetTimer(TimerHandler_Teleport, this, &ASDashProjectile::Teleport_TimeElapsed, 0.2f);
+	AActor* ActorToTeleport = GetInstigator();
+	if (ensure(ActorToTeleport))
+	{
+		ActorToTeleport->TeleportTo(GetActorLocation(), ActorToTeleport->GetActorRotation(), false, false);
+	}
 }
 
-void ASDashProjectile::Teleport_TimeElapsed()
-{
-	GetInstigator()->TeleportTo(this->GetActorLocation(), this->GetActorRotation(), false, false);
 
-	this->Destroy();
-}
+

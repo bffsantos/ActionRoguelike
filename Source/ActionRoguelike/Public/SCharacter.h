@@ -62,7 +62,7 @@ protected:
 
 	void MoveRight(float Value);
 
-	FTransform CalculateAim(float TraceRange);
+	void SpawnProjectile(TSubclassOf<AActor> ClassToSpawn);
 
 	void PrimaryAttack();
 
@@ -74,6 +74,10 @@ protected:
 
 	void Teleport();
 
+	UFUNCTION()
+	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);
+
+	virtual void PostInitializeComponents();
 
 public:	
 	// Called every frame
