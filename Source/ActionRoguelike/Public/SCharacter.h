@@ -37,6 +37,15 @@ protected:
 	FTimerHandle TimerHandler_SecondaryAttack;
 	FTimerHandle TimerHandler_Dash;
 
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	float AttackAnimDelay;
+
+	UPROPERTY(VisibleAnywhere, Category = "Effects")
+	FName TimeToHitParamName;
+
+	UPROPERTY(VisibleAnywhere, Category = "Effects")
+	FName HandSocketName;
+
 public:
 	// Sets default values for this character's properties
 	ASCharacter();
@@ -86,4 +95,6 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION(Exec)
+	void HealSelf(float Amount = 100);
 };

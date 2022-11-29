@@ -28,9 +28,11 @@ ASCharacter::ASCharacter()
 	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
-
 	bUseControllerRotationYaw = false;
 
+	AttackAnimDelay = 0.2f;
+	TimeToHitParamName = "TimeToHit";
+	HandSocketName = "Muzzle_01";
 }
 
 void ASCharacter::PostInitializeComponents()
@@ -89,6 +91,11 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 }
 
+void ASCharacter::HealSelf(float Amount)
+{
+	AttributeComp->ApplyHealthChange(this, Amount);
+}
+
 void ASCharacter::MoveForward(float Value)
 {
 	FRotator ControlRot = GetControlRotation();
@@ -113,7 +120,7 @@ void ASCharacter::SpawnProjectile(TSubclassOf<AActor> ClassToSpawn)
 {
 	if (ensureAlways(ClassToSpawn))
 	{
-		FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+		FVector HandLocation = GetMesh()->GetSocketLocation(HandSocketName);
 
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -156,7 +163,7 @@ void ASCharacter::PrimaryAttack()
 
 	ProjectileClass = MagicProjectileClass;
 
-	GetWorldTimerManager().SetTimer(TimerHandler_PrimaryAttack, this, &ASCharacter::Attack_TimeElapsed, 0.2f);
+	GetWorldTimerManager().SetTimer(TimerHandler_PrimaryAttack, this, &ASCharacter::Attack_TimeElapsed, AttackAnimDelay);
 }
 
 void ASCharacter::SecondaryAttack()
@@ -165,7 +172,7 @@ void ASCharacter::SecondaryAttack()
 
 	ProjectileClass = BlackholeProjectileClass;
 
-	GetWorldTimerManager().SetTimer(TimerHandler_SecondaryAttack, this, &ASCharacter::Attack_TimeElapsed, 0.2f);
+	GetWorldTimerManager().SetTimer(TimerHandler_SecondaryAttack, this, &ASCharacter::Attack_TimeElapsed, AttackAnimDelay);
 }
 
 void ASCharacter::Attack_TimeElapsed()
@@ -184,14 +191,14 @@ void ASCharacter::Teleport()
 
 	ProjectileClass = DashProjectileClass;
 
-	GetWorldTimerManager().SetTimer(TimerHandler_Dash, this, &ASCharacter::Attack_TimeElapsed, 0.2f);
+	GetWorldTimerManager().SetTimer(TimerHandler_Dash, this, &ASCharacter::Attack_TimeElapsed, AttackAnimDelay);
 }
 
 void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta)
 {
 	if (Delta < 0.0f)
 	{
-		GetMesh()->SetScalarParameterValueOnMaterials("HitFlashTime", GetWorld()->TimeSeconds);
+		GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParamName, GetWorld()->TimeSeconds);
 
 		if (NewHealth <= 0.0f)
 		{

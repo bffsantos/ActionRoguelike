@@ -5,6 +5,7 @@
 #include "SAttributeComponent.h"
 #include "SCharacter.h"
 #include "SGameplayInterface.h"
+#include "Components/SphereComponent.h"
 
 // Sets default values
 ASPickup::ASPickup()
@@ -12,38 +13,37 @@ ASPickup::ASPickup()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>("MeshComp");
-	RootComponent = MeshComp;
-	MeshComp->OnComponentBeginOverlap.AddDynamic(this, &ASPickup::OnActorOverlap);
+	SphereComp = CreateDefaultSubobject<USphereComponent>("SphereComp");
+	SphereComp->SetCollisionProfileName("Pickup");
+	RootComponent = SphereComp;
 
+	RespawnTime = 10.0f;
 }
 
 void ASPickup::Interact_Implementation(APawn* InstigatorPawn)
 {
 	USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(InstigatorPawn->GetComponentByClass(USAttributeComponent::StaticClass()));
 
-	AttributeComp->ApplyHealthChange(100);
+	AttributeComp->ApplyHealthChange(this, 100);
 }
 
-// Called when the game starts or when spawned
-void ASPickup::BeginPlay()
+void ASPickup::ShowPickup()
 {
-	Super::BeginPlay();
-	
+	SetPickupState(true);
 }
 
-// Called every frame
-void ASPickup::Tick(float DeltaTime)
+void ASPickup::HideAndCooldownPickup()
 {
-	Super::Tick(DeltaTime);
+	SetPickupState(false);
 
+	GetWorldTimerManager().SetTimer(TimerHandler_RespawnTimer, this, &ASPickup::ShowPickup, RespawnTime);
 }
 
-void ASPickup::Cooldown_TimeElapsed()
+void ASPickup::SetPickupState(bool bNewIsActive)
 {
-	SetActorHiddenInGame(false);
-	SetActorEnableCollision(true);
-	SetActorTickEnabled(true);
+	SetActorEnableCollision(bNewIsActive);
+
+	RootComponent->SetVisibility(bNewIsActive, true);
 }
 
 void ASPickup::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -59,8 +59,6 @@ void ASPickup::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 		SetActorHiddenInGame(true);
 		SetActorEnableCollision(false);
 		SetActorTickEnabled(false);
-
-		GetWorldTimerManager().SetTimer(TimerHandler_Cooldown, this, &ASPickup::Cooldown_TimeElapsed, 10.0f);
 	}
 }
 

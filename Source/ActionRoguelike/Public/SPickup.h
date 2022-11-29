@@ -7,7 +7,7 @@
 #include "SGameplayInterface.h"
 #include "SPickup.generated.h"
 
-class UStaticMeshComponent;
+class USphereComponent;
 
 UCLASS()
 class ACTIONROGUELIKE_API ASPickup : public AActor, public ISGameplayInterface
@@ -22,19 +22,22 @@ public:
 
 protected:
 
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
-	UStaticMeshComponent* MeshComp;
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	USphereComponent* SphereComp;
 
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	UPROPERTY(EditAnywhere, Category = "Pickup")
+	float RespawnTime;
 
-	FTimerHandle TimerHandler_Cooldown;
+	FTimerHandle TimerHandler_RespawnTimer;
 
-	void Cooldown_TimeElapsed();
+	UFUNCTION()
+	void ShowPickup();
+
+	void HideAndCooldownPickup();
+
+	void SetPickupState(bool bNewIsActive);
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
 	void OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
