@@ -35,13 +35,40 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	float SpawnTimerInterval;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
+	int32 CreditsPerKill;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Powerups")
+	UEnvQuery* PickupSpawnQuery;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Powerups")
+	TArray<TSubclassOf<AActor>> PickupClasses;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Pickups")
+	int32 DesiredPickupCount;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Pickups")
+	float RequiredPickupDistance;
+
 	UFUNCTION()
 	void SpawnBotTimerElapsed();
 
 	UFUNCTION()
 	void OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
 
+	UFUNCTION()
+	void OnPickupSpawnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
+
+	UFUNCTION()
+	void RespawnPlayerElapsed(AController* Controller);
+
+protected:
+
+	float AvailableSpawnCredit;
+
 public:
+
+	virtual void OnActorKilled(AActor* VictimActor, AActor* Killer);
 
 	ASGameModeBase();
 	

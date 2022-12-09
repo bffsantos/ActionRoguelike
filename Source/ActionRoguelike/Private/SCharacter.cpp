@@ -9,6 +9,7 @@
 #include "SInteractionComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "SAttributeComponent.h"
+#include "SActionComponent.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -27,12 +28,12 @@ ASCharacter::ASCharacter()
 
 	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
 
+	ActionComp = CreateDefaultSubobject<USActionComponent>("ActionComp");
+
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;
 
-	AttackAnimDelay = 0.2f;
 	TimeToHitParamName = "TimeToHit";
-	HandSocketName = "Muzzle_01";
 }
 
 void ASCharacter::PostInitializeComponents()
@@ -40,6 +41,11 @@ void ASCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	AttributeComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
+}
+
+FVector ASCharacter::GetPawnViewLocation() const
+{
+	return CameraComp->GetComponentLocation();
 }
 
 // Called when the game starts or when spawned
@@ -85,10 +91,13 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &ASCharacter::PrimaryAttack);
 	PlayerInputComponent->BindAction("SecondaryAttack", IE_Pressed, this, &ASCharacter::SecondaryAttack);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &ASCharacter::PrimaryInteract);
 	PlayerInputComponent->BindAction("ProjectileTeleport", IE_Pressed, this, &ASCharacter::Teleport);
 
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ASCharacter::SprintStart);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::SprintStop);
+
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 }
 
 void ASCharacter::HealSelf(float Amount)
@@ -116,68 +125,24 @@ void ASCharacter::MoveRight(float Value)
 	AddMovementInput(RightVector, Value);
 }
 
-void ASCharacter::SpawnProjectile(TSubclassOf<AActor> ClassToSpawn)
+void ASCharacter::SprintStart()
 {
-	if (ensureAlways(ClassToSpawn))
-	{
-		FVector HandLocation = GetMesh()->GetSocketLocation(HandSocketName);
+	ActionComp->StartActionByName(this, "Sprint");
+}
 
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		SpawnParams.Instigator = this;
-
-		FCollisionShape Shape;
-		Shape.SetSphere(20.0f);
-
-		//Ignore PLayer
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(this);
-
-		FCollisionObjectQueryParams ObjParams;
-		ObjParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-		ObjParams.AddObjectTypesToQuery(ECC_WorldStatic);
-		ObjParams.AddObjectTypesToQuery(ECC_Pawn);
-		
-		FVector TraceStart = CameraComp->GetComponentLocation();
-
-		FVector TraceEnd = CameraComp->GetComponentLocation() + (GetControlRotation().Vector() * 5000);
-
-		FHitResult Hit;
-		if (GetWorld()->SweepSingleByObjectType(Hit, TraceStart, TraceEnd, FQuat::Identity, ObjParams, Shape, Params))
-		{
-			//Overwrite trace end with impact point in world
-			TraceEnd = Hit.ImpactPoint;
-		}
-
-		// find new direction/rotation from Hand pointing to impact point in world
-		FRotator ProjRotation = (TraceEnd - HandLocation).Rotation();
-
-		FTransform SpawnTM = FTransform(ProjRotation, HandLocation);
-		GetWorld()->SpawnActor<AActor>(ClassToSpawn, SpawnTM, SpawnParams);
-	}
+void ASCharacter::SprintStop()
+{
+	ActionComp->StopActionByName(this, "Sprint");
 }
 
 void ASCharacter::PrimaryAttack()
 {
-	PlayAnimMontage(AttackAnim);
-
-	ProjectileClass = MagicProjectileClass;
-
-	GetWorldTimerManager().SetTimer(TimerHandler_PrimaryAttack, this, &ASCharacter::Attack_TimeElapsed, AttackAnimDelay);
+	ActionComp->StartActionByName(this, "PrimaryAttack");
 }
 
 void ASCharacter::SecondaryAttack()
 {
-	PlayAnimMontage(AttackAnim);
-
-	ProjectileClass = BlackholeProjectileClass;
-
-	GetWorldTimerManager().SetTimer(TimerHandler_SecondaryAttack, this, &ASCharacter::Attack_TimeElapsed, AttackAnimDelay);
-}
-
-void ASCharacter::Attack_TimeElapsed()
-{
-	SpawnProjectile(ProjectileClass);
+	ActionComp->StartActionByName(this, "SecondaryAttack");
 }
 
 void ASCharacter::PrimaryInteract()
@@ -187,11 +152,7 @@ void ASCharacter::PrimaryInteract()
 
 void ASCharacter::Teleport()
 {
-	PlayAnimMontage(AttackAnim);
-
-	ProjectileClass = DashProjectileClass;
-
-	GetWorldTimerManager().SetTimer(TimerHandler_Dash, this, &ASCharacter::Attack_TimeElapsed, AttackAnimDelay);
+	ActionComp->StartActionByName(this, "Teleport");
 }
 
 void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta)

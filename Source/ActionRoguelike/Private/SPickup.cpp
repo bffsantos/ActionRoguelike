@@ -17,6 +17,10 @@ ASPickup::ASPickup()
 	SphereComp->SetCollisionProfileName("Pickup");
 	RootComponent = SphereComp;
 
+	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>("MeshComp");
+	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MeshComp->SetupAttachment(RootComponent);
+
 	RespawnTime = 10.0f;
 }
 

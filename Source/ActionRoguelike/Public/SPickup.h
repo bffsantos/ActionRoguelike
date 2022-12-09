@@ -22,6 +22,9 @@ public:
 
 protected:
 
+	UPROPERTY(EditAnywhere, Category = "Componentes")
+	UStaticMeshComponent* MeshComp;
+
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	USphereComponent* SphereComp;
 

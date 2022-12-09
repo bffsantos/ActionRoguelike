@@ -11,6 +11,7 @@ class USpringArmComponent;
 class USInteractionComponent;
 class UAnimMontage;
 class USAttributeComponent;
+class USActionComponent;
 
 UCLASS()
 class ACTIONROGUELIKE_API ASCharacter : public ACharacter
@@ -19,32 +20,8 @@ class ACTIONROGUELIKE_API ASCharacter : public ACharacter
 
 protected:
 
-	TSubclassOf<AActor> ProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> MagicProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> BlackholeProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> DashProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	UAnimMontage* AttackAnim;
-
-	FTimerHandle TimerHandler_PrimaryAttack;
-	FTimerHandle TimerHandler_SecondaryAttack;
-	FTimerHandle TimerHandler_Dash;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	float AttackAnimDelay;
-
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
 	FName TimeToHitParamName;
-
-	UPROPERTY(VisibleAnywhere, Category = "Effects")
-	FName HandSocketName;
 
 public:
 	// Sets default values for this character's properties
@@ -64,6 +41,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USAttributeComponent* AttributeComp;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USActionComponent* ActionComp;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -71,11 +51,11 @@ protected:
 
 	void MoveRight(float Value);
 
-	void SpawnProjectile(TSubclassOf<AActor> ClassToSpawn);
+	void SprintStart();
+
+	void SprintStop();
 
 	void PrimaryAttack();
-
-	void Attack_TimeElapsed();
 	
 	void SecondaryAttack();
 	
@@ -87,6 +67,8 @@ protected:
 	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);
 
 	virtual void PostInitializeComponents();
+
+	virtual FVector GetPawnViewLocation() const override;
 
 public:	
 	// Called every frame

@@ -24,7 +24,6 @@ public:
 
 protected:
 
-	UPROPERTY(EditAnywhere, Category = "Componentes")
-	UStaticMeshComponent* MeshComp;
-
+	UPROPERTY(EditAnywhere, Category = "Credits")
+	int32 CreditCost;
 };

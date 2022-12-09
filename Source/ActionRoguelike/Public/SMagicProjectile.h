@@ -5,7 +5,10 @@
 #include "CoreMinimal.h"
 #include "SBaseProjectile.h"
 #include "GameFramework/Actor.h"
+#include "GameplayTagContainer.h"
 #include "SMagicProjectile.generated.h"
+
+class USActionEffect;
 
 UCLASS()
 class ACTIONROGUELIKE_API ASMagicProjectile : public ASBaseProjectile
@@ -13,16 +16,19 @@ class ACTIONROGUELIKE_API ASMagicProjectile : public ASBaseProjectile
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
+
 	ASMagicProjectile();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+protected:	
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	float DamageAmount;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Tags")
+	FGameplayTag ParryTag;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<USActionEffect> BurningActionClass;
 
 	UFUNCTION()
 	void OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

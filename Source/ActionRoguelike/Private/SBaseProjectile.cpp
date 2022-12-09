@@ -31,6 +31,9 @@ ASBaseProjectile::ASBaseProjectile()
 	ProjectileMovementComp->bRotationFollowsVelocity = true;
 	ProjectileMovementComp->bInitialVelocityInLocalSpace = true;
 	ProjectileMovementComp->ProjectileGravityScale = 0.0f;
+
+	ImpactShakeInnerRadius = 0.0f;
+	ImpactShakeOuterRadius = 1500.0f;
 }
 
 void ASBaseProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -41,13 +44,13 @@ void ASBaseProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* Oth
 // _Implementation from it being marked as BlueprintNativeEvent
 void ASBaseProjectile::Explode_Implementation()
 {
-	if (ensure(IsValid(this)))
+	if (ensure(!IsPendingKill()))
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
 
 		UGameplayStatics::PlaySoundAtLocation(this, HitSFX, GetActorLocation());
 
-		UGameplayStatics::PlayWorldCameraShake(this, CameraShakeClass, GetActorLocation(), 1.0f, 2000.0f);
+		UGameplayStatics::PlayWorldCameraShake(this, CameraShakeClass, GetActorLocation(), ImpactShakeInnerRadius, ImpactShakeOuterRadius);
 
 		Destroy();
 	}
@@ -66,9 +69,4 @@ void ASBaseProjectile::CastProjectile()
 void ASBaseProjectile::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	//SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
 }
-
-
-
-

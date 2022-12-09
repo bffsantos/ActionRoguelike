@@ -6,6 +6,10 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "SAttributeComponent.h"
+#include "SGameplayFunctionLibrary.h"
+#include "SActionComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+#include "SActionEffect.h"
 
 // Sets default values
 ASMagicProjectile::ASMagicProjectile()
@@ -16,34 +20,31 @@ ASMagicProjectile::ASMagicProjectile()
 	SphereComp->SetSphereRadius(10.0f);
 	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ASMagicProjectile::OnActorOverlap);
 
-}
-
-// Called when the game starts or when spawned
-void ASMagicProjectile::BeginPlay()
-{
-	Super::BeginPlay();
-
-	CastProjectile();
-}
-
-// Called every frame
-void ASMagicProjectile::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
+	DamageAmount = 20.0f;
 }
 
 void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != GetInstigator())
 	{
-		USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));
+		USActionComponent* ActionComp = Cast<USActionComponent>(OtherActor->GetComponentByClass(USActionComponent::StaticClass()));
 
-		if (AttributeComp)
+		if (ActionComp && ActionComp->ActiveGameplayTags.HasTag(ParryTag))
 		{
-			AttributeComp->ApplyHealthChange(GetInstigator(), -Damage);
+			ProjectileMovementComp->Velocity = -ProjectileMovementComp->Velocity;
 
+			SetInstigator(Cast<APawn>(OtherActor));
+			return;
+		}
+
+		if (USGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult)) 
+		{
 			Explode();
+
+			if (ActionComp)
+			{
+				ActionComp->AddAction(GetInstigator(), BurningActionClass);
+			}
 		}
 	}
 	

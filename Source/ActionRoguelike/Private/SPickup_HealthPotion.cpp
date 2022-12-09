@@ -3,13 +3,12 @@
 
 #include "SPickup_HealthPotion.h"
 #include "SAttributeComponent.h"
+#include "SPlayerState.h"
 
 
 ASPickup_HealthPotion::ASPickup_HealthPotion()
 {
-	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>("MeshComp");
-	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	MeshComp->SetupAttachment(RootComponent);
+	CreditCost = 50;
 }
 
 void ASPickup_HealthPotion::Interact_Implementation(APawn* InstigatorPawn)
@@ -23,10 +22,12 @@ void ASPickup_HealthPotion::Interact_Implementation(APawn* InstigatorPawn)
 
 	if (ensure(AttributeComp) && !AttributeComp->IsFullHealth())
 	{
-		if (AttributeComp->ApplyHealthChange(this, AttributeComp->GetMaxHealth()))
+		if (ASPlayerState* PS = InstigatorPawn->GetPlayerState<ASPlayerState>())
 		{
-			HideAndCooldownPickup();
+			if (PS->RemoveCredits(CreditCost) && AttributeComp->ApplyHealthChange(this, AttributeComp->GetMaxHealth()))
+			{
+				HideAndCooldownPickup();
+			}
 		}
-
 	}
 }
