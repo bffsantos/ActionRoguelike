@@ -40,13 +40,6 @@ void ASAICharacter::PostInitializeComponents()
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &ASAICharacter::OnPawnSeen);
 }
 
-void ASAICharacter::OnPawnSeen(APawn* Pawn)
-{
-	SetTargetActor(Pawn);
-
-	DrawDebugString(GetWorld(), GetActorLocation(), "PLAYER SPOTTED", nullptr, FColor::White, 4.0f, true);
-}
-
 void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta)
 {
 	if (Delta < 0.0f)
@@ -104,10 +97,30 @@ void ASAICharacter::SetTargetActor(AActor* NewTarget)
 	}
 }
 
-// Called to bind functionality to input
-void ASAICharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+AActor* ASAICharacter::GetTargetActor() const
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	AAIController* AIC = Cast<AAIController>(GetController());
+	if (AIC)
+	{
+		return Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject(TargetActorKey));
+	}
 
+	return nullptr;
+}
+
+void ASAICharacter::OnPawnSeen(APawn* Pawn)
+{
+	if (GetTargetActor() != Pawn)
+	{
+		SetTargetActor(Pawn);
+
+		USWorldUserWidget* NewWidget = CreateWidget<USWorldUserWidget>(GetWorld(), SpottedWidgetClass);
+		if (NewWidget)
+		{
+			NewWidget->AttachedActor = this;
+			NewWidget->AddToViewport(10);
+		}
+	}
+	//DrawDebugString(GetWorld(), GetActorLocation(), "PLAYER SPOTTED", nullptr, FColor::White, 0.5f, true);
 }
 

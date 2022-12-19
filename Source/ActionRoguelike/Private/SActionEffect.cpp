@@ -42,10 +42,10 @@ void USActionEffect::StopAction_Implementation(AActor* Instigator)
 	GetWorld()->GetTimerManager().ClearTimer(PeriodHandle);
 	GetWorld()->GetTimerManager().ClearTimer(DurationHandle);
 
-	USActionComponent* ActionComp = GetOwningComponent();
-	if (ActionComp)
+	USActionComponent* Comp = GetOwningComponent();
+	if (Comp)
 	{
-		ActionComp->RemoveAction(this);
+		Comp->RemoveAction(this);
 	}
 
 }

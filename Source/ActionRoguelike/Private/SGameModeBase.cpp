@@ -29,7 +29,7 @@ void ASGameModeBase::StartPlay()
 {
 	Super::StartPlay();
 
-	GetWorldTimerManager().SetTimer(TimerHandler_SpawnBot, this, &ASGameModeBase::SpawnBotTimerElapsed, SpawnTimerInterval, true);
+	//GetWorldTimerManager().SetTimer(TimerHandler_SpawnBot, this, &ASGameModeBase::SpawnBotTimerElapsed, SpawnTimerInterval, true);
 
 	if (ensure(PickupClasses.Num() > 0))
 	{
