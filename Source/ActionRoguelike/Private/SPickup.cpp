@@ -6,6 +6,7 @@
 #include "SCharacter.h"
 #include "SGameplayInterface.h"
 #include "Components/SphereComponent.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ASPickup::ASPickup()
@@ -33,6 +34,12 @@ void ASPickup::Interact_Implementation(APawn* InstigatorPawn)
 	AttributeComp->ApplyHealthChange(this, 100);
 }
 
+void ASPickup::OnRep_IsActive()
+{
+	SetActorEnableCollision(bIsActive);
+	RootComponent->SetVisibility(bIsActive, true);
+}
+
 void ASPickup::ShowPickup()
 {
 	SetPickupState(true);
@@ -47,9 +54,8 @@ void ASPickup::HideAndCooldownPickup()
 
 void ASPickup::SetPickupState(bool bNewIsActive)
 {
-	SetActorEnableCollision(bNewIsActive);
-
-	RootComponent->SetVisibility(bNewIsActive, true);
+	bIsActive = bNewIsActive;
+	OnRep_IsActive();
 }
 
 void ASPickup::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -68,3 +74,10 @@ void ASPickup::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 	}
 }
 
+
+void ASPickup::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const 
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ASPickup, bIsActive);
+}

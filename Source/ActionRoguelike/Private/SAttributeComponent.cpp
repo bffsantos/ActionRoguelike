@@ -107,7 +107,6 @@ bool USAttributeComponent::ApplyRage(AActor* InstigatorActor, float Delta)
 	if (ActualDelta != 0.0f)
 	{
 		OnRageChanged.Broadcast(InstigatorActor, this, Rage, ActualDelta);
-		//MulticastRageChanged(InstigatorActor, Rage, Delta);
 	}
 
 	return ActualDelta != 0;
