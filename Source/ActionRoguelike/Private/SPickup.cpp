@@ -27,11 +27,16 @@ ASPickup::ASPickup()
 	SetReplicates(true);
 }
 
+FText ASPickup::GetInteractText_Implementation(APawn* InstigatorPawn)
+{
+	return FText::GetEmpty();
+}
+
 void ASPickup::Interact_Implementation(APawn* InstigatorPawn)
 {
-	USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(InstigatorPawn->GetComponentByClass(USAttributeComponent::StaticClass()));
+	//USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(InstigatorPawn->GetComponentByClass(USAttributeComponent::StaticClass()));
 
-	AttributeComp->ApplyHealthChange(this, 100);
+	//AttributeComp->ApplyHealthChange(this, 100);
 }
 
 void ASPickup::OnRep_IsActive()

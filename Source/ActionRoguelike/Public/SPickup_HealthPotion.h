@@ -22,6 +22,8 @@ public:
 
 	void Interact_Implementation(APawn* InstigatorPawn) override;
 
+	FText GetInteractText_Implementation(APawn* InstigatorPawn) override;
+
 protected:
 
 	UPROPERTY(EditAnywhere, Category = "Credits")
