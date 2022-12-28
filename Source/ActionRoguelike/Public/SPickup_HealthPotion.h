@@ -17,7 +17,7 @@ class ACTIONROGUELIKE_API ASPickup_HealthPotion : public ASPickup
 	GENERATED_BODY()
 	
 public:
-
+	
 	ASPickup_HealthPotion();
 
 	void Interact_Implementation(APawn* InstigatorPawn) override;
